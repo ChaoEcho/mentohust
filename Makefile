@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mentohust
-PKG_VERSION:=0.3.1
+PKG_VERSION:=0.1
 PKG_RELEASE:=1
 
 
@@ -22,14 +22,13 @@ define Package/mentohust
   SECTION:=net
   CATEGORY:=Network
   DEPENDS:=+libpcap
-  TITLE:=A Ruijie Client Daemon
-  URL:=https://github.com/KyleRicardo/MentoHUST-OpenWrt-ipk.git
+  TITLE:=MentoHUST for SYSU
+  URL:=https://github.com/KumaTea/MentoHUST-SYSU-OpenWrt.git
   SUBMENU:=Ruijie
 endef
 
 define Package/mentohust/description
-A Ruijie Client Daemon,
-Most usually used in China collages.
+MentoHUST for SYSU
 endef
 
 define Build/Prepare

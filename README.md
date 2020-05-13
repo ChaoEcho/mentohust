@@ -17,3 +17,5 @@
 ./scripts/feeds install -a
 make menuconfig
 ```
+
+软件包位置在 `Network` - `Ruijie`

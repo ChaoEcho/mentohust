@@ -22,6 +22,8 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#define NO_NOTIFY 1
+
 extern pcap_t *hPcap;
 extern volatile int state;
 extern u_char *fillBuf;

@@ -14,6 +14,7 @@
 
 #define PCAP_ERRBUF_SIZE	256
 #define PCAP_IF_LOOPBACK	0x00000001
+#define NO_NOTIFY           1
 
 typedef unsigned int bpf_u_int32;
 typedef void pcap_t;

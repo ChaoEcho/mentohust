@@ -14,6 +14,8 @@
 #ifndef NO_DYLOAD
 #include <dlfcn.h>
 
+#define NO_NOTIFY 1
+
 int (*pcap_findalldevs)(pcap_if_t **, char *);
 void (*pcap_freealldevs)(pcap_if_t *);
 pcap_t *(*pcap_open_live)(const char *, int, int, int, char *);

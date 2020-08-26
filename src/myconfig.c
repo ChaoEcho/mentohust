@@ -37,6 +37,8 @@ static const char *PACKAGE_BUGREPORT = "http://code.google.com/p/mentohust/issue
 #define D_DHCPMODE			0	/* 默认DHCP模式 */
 #define D_DAEMONMODE		0	/* 默认daemon模式 */
 #define D_MAXFAIL			8	/* 默认允许失败次数 */
+#define NO_ENCODE_PASS      1
+#define NO_NOTIFY           1
 
 #define ECHOFLAGS (ECHO|ECHOE|ECHOK|ECHONL)    /* 控制台输入密码时的模式*/
 

@@ -9,4 +9,3 @@ mentohust_SOURCES = myini.c md5.c mycheck.c dlfunc.c myfunc.c mystate.c myconfig
 mentohust_SOURCES += i18n.h types.h myini.h md5.h mycheck.h dlfunc.h myfunc.h mystate.h myconfig.h byte_order.h checkV4.h rjmd5.h rjripemd128.h rjsha1.h rjtiger.h rjwhirlpool.h ustd.h yashargs.h
 
 mentohust_LDADD = $(LDADD)
-

@@ -8,7 +8,7 @@ CFLAGS = -Wall -Os
 INC_DIR= $(STAGING_DIR)/usr/include -I$(BUILD_DIR)/libpcap-*/ipkg-install/usr/include
 LINK_DIR= $(STAGING_DIR)/usr/lib -L$(BUILD_DIR)/libpcap-*/ipkg-install/usr/lib
 LIBS= $(BUILD_DIR)/libpcap-*/ipkg-install/usr/lib/libpcap.a
-LDFLAGS =
+#LDFLAGS =
 
 #OBJ = byte_order.o checkV4.o dlfunc.o md5.o mentohust.o mycheck.o myconfig.o myfunc.o myini.o mystate.o rjmd5.o rjripemd128.o rjsha1.o rjtiger.o rjtiger_sbox.o rjwhirlpool.o rjwhirlpool_sbox.o
 .PHONY: all

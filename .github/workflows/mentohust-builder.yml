@@ -39,9 +39,9 @@ jobs:
       - name: Build MentoHUST package
         uses: openwrt/gh-action-sdk@main
         env:
-          # 使用稳定的OpenWrt 21.02版本，而不是不稳定的snapshot版本
-          # 'x86_64' 是您的目标CPU架构。
-          ARCH: x86_64-openwrt-21.02
+          # 使用 snapshot 版本以匹配 OpenWrt 24.10.2 目标系统
+          # 24.10 是开发分支，通常使用 snapshot 标识符
+          ARCH: x86_64-snapshot
           
           # 告诉 Action 去编译您仓库中哪个目录下的软件包。
           # Action 会在 'mentohust' 目录中寻找包。

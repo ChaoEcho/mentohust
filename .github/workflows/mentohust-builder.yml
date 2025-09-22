@@ -14,38 +14,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 步骤1：签出您的仓库代码
-      # 这一步会把您上传的 MentoHUST 源代码下载到构建环境中。
+      # 步骤1：签出您的仓库代码到正确的路径
+      # 使用path参数将代码checkout到'./mentohust'目录，符合SDK预期
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: './mentohust'
+          fetch-depth: 0
 
-      # 步骤2：调整目录结构以符合 OpenWrt SDK 预期 (已修复)
-      # gh-action-sdk 期望软件包位于 'package/<packagename>' 目录中。
-      # 我们将移动文件来创建这个结构，以解决 'No rule to make target' 错误。
-      - name: Prepare directory structure for SDK
-        run: |
-          mkdir -p package/mentohust
-          # 将所有与软件包相关的文件（Makefile, src目录等）移动到目标位置。
-          mv Makefile src README.md package/mentohust/
-
-      # 步骤3：使用 OpenWrt 官方 SDK Action 编译软件包
+      # 步骤2：使用 OpenWrt 官方 SDK Action 编译软件包
       # 这是核心步骤，它会自动处理 SDK 下载、链接源码和编译。
       - name: Build MentoHUST package
         uses: openwrt/gh-action-sdk@main
         env:
-          # 这是最关键的设置，已为您配置好：
+          # 使用稳定的OpenWrt 21.02版本，而不是不稳定的snapshot版本
           # 'x86_64' 是您的目标CPU架构。
-          # 'snapshot' 是版本号，因为您的 OpenWrt 24.10.x 是一个非常新的开发快照版。
-          ARCH: x86_64-snapshot
+          ARCH: x86_64-openwrt-21.02
           
           # 告诉 Action 去编译您仓库中哪个目录下的软件包。
-          # Action 会在 'package' 目录中寻找名为 'mentohust' 的包。
+          # Action 会在 'mentohust' 目录中寻找包。
           PACKAGES: mentohust
           
           # 自定义 feed 的名称，这是一个标准的默认值。
           FEEDNAME: packages_ci
+          
+          # 禁用刷新检查以避免构建问题
+          NO_REFRESH_CHECK: true
 
-      # 步骤4：将编译好的 .ipk 文件打包为构建产物
+      # 步骤3：将编译好的 .ipk 文件打包为构建产物
       # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4

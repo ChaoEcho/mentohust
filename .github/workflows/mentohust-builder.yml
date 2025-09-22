@@ -71,13 +71,29 @@ jobs:
           echo "=== Environment variables ==="
           env | grep -E "(ARCH|PACKAGES|FEEDNAME)" || echo "No relevant env vars"
 
-      # 步骤5：将编译好的 .ipk 文件打包为构建产物
+      # 步骤5：检查生成的IPK文件位置
+      - name: Debug - Find generated IPK files
+        run: |
+          echo "=== Searching for IPK files ==="
+          find . -name "*.ipk" -type f 2>/dev/null || echo "No .ipk files found in current directory"
+          echo "=== Checking bin directory structure ==="
+          ls -la bin/ 2>/dev/null || echo "No bin directory"
+          find bin/ -name "*.ipk" 2>/dev/null || echo "No .ipk files in bin directory"
+          echo "=== Checking all possible package directories ==="
+          find . -path "*/packages/*" -name "*.ipk" 2>/dev/null || echo "No packages found"
+
+      # 步骤6：将编译好的 .ipk 文件打包为构建产物
       # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
         with:
           # 设置下载下来的 zip 压缩包的名字
           name: mentohust-ipk-x86_64
-          # 需要上传的文件的路径，通配符会自动匹配编译好的 .ipk 文件
-          path: bin/packages/x86_64/packages_ci/*.ipk
+          # 使用通配符匹配所有可能的路径
+          path: |
+            bin/packages/x86_64/packages_ci/*.ipk
+            bin/packages/x86_64/base/*.ipk
+            bin/packages/x86_64/*/*.ipk
+          # 如果没有找到文件也不报错
+          if-no-files-found: warn
 

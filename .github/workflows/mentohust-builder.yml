@@ -19,7 +19,55 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 步骤2：使用 OpenWrt 官方 SDK Action 编译软件包
+      # 步骤2：为 OpenWrt 构建准备正确的包结构 (已修复)
+      # 您的仓库结构包含 'src' 目录中的源代码，但缺少 OpenWrt 打包所需的 Makefile。
+      # 我们将动态地创建正确的结构以修复编译错误。
+      - name: Prepare OpenWrt package structure
+        run: |
+          # 1. 将 'src' 目录重命名为 'mentohust'，这是 Action 所期望的包名目录。
+          mv src mentohust
+          # 2. 在 'mentohust' 目录中创建符合 OpenWrt 规范的 Makefile。
+          #    这个 Makefile 告诉构建系统如何编译本地源代码。
+          cat <<'EOF' > mentohust/Makefile
+          include $(TOPDIR)/rules.mk
+          PKG_NAME:=mentohust
+          PKG_VERSION:=0.3.1-6
+          PKG_RELEASE:=1
+          PKG_MAINTAINER:=hyt ubuntu <hytubuntu@gmail.com>
+          PKG_LICENSE:=GPL-2.0-only
+          PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+          include $(INCLUDE_DIR)/package.mk
+          define Package/mentohust
+              SECTION:=net
+              CATEGORY:=Network
+              TITLE:=A client for SYSU Ruijie (V3/V4)
+              URL:=https://gitee.com/kumatea/MentoHUST-SYSU-OpenWrt
+              DEPENDS:=+libpcap
+          endef
+          define Package/mentohust/description
+              A client for SYSU Ruijie (V3/V4) authentication.
+              This version is specially adapted for SYSU.
+          endef
+          define Build/Prepare
+              mkdir -p $(PKG_BUILD_DIR)
+              cp -r ./src/* $(PKG_BUILD_DIR)/
+          endef
+          define Build/Compile
+              $(MAKE) -C $(PKG_BUILD_DIR) \
+                  CC="$(TARGET_CC)" \
+                  CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include" \
+                  LDFLAGS="$(TARGET_LDFLAGS) -L$(STAGING_DIR)/usr/lib"
+          endef
+          define Package/mentohust/install
+              $(INSTALL_DIR) $(1)/usr/bin
+              $(INSTALL_BIN) $(PKG_BUILD_DIR)/mentohust $(1)/usr/bin/
+              $(INSTALL_DIR) $(1)/etc/
+              $(INSTALL_CONF) $(PKG_BUILD_DIR)/mentohust.conf $(1)/etc/
+          endef
+          $(eval $(call BuildPackage,mentohust))
+          EOF
+
+      # 步骤3：使用 OpenWrt 官方 SDK Action 编译软件包
       # 这是核心步骤，它会自动处理 SDK 下载、链接源码和编译。
       - name: Build MentoHUST package
         uses: openwrt/gh-action-sdk@main
@@ -36,7 +84,7 @@ jobs:
           # 自定义 feed 的名称，这是一个标准的默认值。
           FEEDNAME: packages_ci
 
-      # 步骤3：将编译好的 .ipk 文件打包为构建产物
+      # 步骤4：将编译好的 .ipk 文件打包为构建产物
       # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
@@ -45,3 +93,4 @@ jobs:
           name: mentohust-ipk-x86_64
           # 需要上传的文件的路径，通配符会自动匹配编译好的 .ipk 文件
           path: bin/packages/x86_64/packages_ci/*.ipk
+

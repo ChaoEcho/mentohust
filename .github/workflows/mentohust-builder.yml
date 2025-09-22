@@ -87,13 +87,7 @@ jobs:
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
         with:
-          # 设置下载下来的 zip 压缩包的名字
           name: mentohust-ipk-x86_64
-          # 使用通配符匹配所有可能的路径
-          path: |
-            bin/packages/x86_64/packages_ci/*.ipk
-            bin/packages/x86_64/base/*.ipk
-            bin/packages/x86_64/*/*.ipk
-          # 如果没有找到文件也不报错
+          path: bin/packages/x86_64/*/*.ipk
           if-no-files-found: warn
 

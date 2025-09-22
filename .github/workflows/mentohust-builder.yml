@@ -1,5 +1,5 @@
 # 工作流名称
-name: Build MentoHUST Package for x86_64 Snapshot
+name: Build MentoHUST for x86_64 OpenWrt 21.02
 
 # 1. 工作流触发器
 # 设置为 "workflow_dispatch"，允许您从 GitHub 仓库的 "Actions" 标签页手动触发此构建流程。
@@ -39,9 +39,9 @@ jobs:
       - name: Build MentoHUST package
         uses: openwrt/gh-action-sdk@main
         env:
-          # 使用 snapshot 版本以匹配 OpenWrt 24.10.2 目标系统
-          # 24.10 是开发分支，通常使用 snapshot 标识符
-          ARCH: x86_64-snapshot
+          # 使用 OpenWrt 21.02 LTS 版本以生成 IPK 文件
+          # 21.02 版本使用传统的 OPKG 包管理器，生成 .ipk 文件
+          ARCH: x86_64-openwrt-21.02
           
           # 告诉 Action 去编译您仓库中哪个目录下的软件包。
           # Action 会在 'mentohust' 目录中寻找包。
@@ -71,32 +71,23 @@ jobs:
           echo "=== Environment variables ==="
           env | grep -E "(ARCH|PACKAGES|FEEDNAME)" || echo "No relevant env vars"
 
-      # 步骤5：检查生成的包文件位置（支持APK和IPK）
-      - name: Debug - Find generated package files
+      # 步骤5：检查生成的IPK文件位置
+      - name: Debug - Find generated IPK files
         run: |
-          echo "=== Searching for package files ==="
-          find . -name "*.apk" -type f 2>/dev/null && echo "Found .apk files" || echo "No .apk files found in current directory"
-          find . -name "*.ipk" -type f 2>/dev/null && echo "Found .ipk files" || echo "No .ipk files found in current directory"
+          echo "=== Searching for IPK files ==="
+          find . -name "*.ipk" -type f 2>/dev/null || echo "No .ipk files found in current directory"
           echo "=== Checking bin directory structure ==="
           ls -la bin/ 2>/dev/null || echo "No bin directory"
-          find bin/ -name "*.apk" -o -name "*.ipk" 2>/dev/null || echo "No package files in bin directory"
-          echo "=== Checking all possible package directories ==="
-          find . -path "*/packages/*" -name "*.apk" -o -path "*/packages/*" -name "*.ipk" 2>/dev/null || echo "No packages found"
+          find bin/ -name "*.ipk" 2>/dev/null || echo "No .ipk files in bin directory"
+          echo "=== Checking packages_ci directory ==="
+          find bin/packages/x86_64/packages_ci/ -name "*.ipk" 2>/dev/null || echo "No packages found in packages_ci"
 
-      # 步骤6：将编译好的包文件打包为构建产物（优先APK，回退到IPK）
-      # 新版本OpenWrt使用APK包管理器，旧版本使用IPK/OPKG
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mentohust-apk-x86_64
-          path: bin/packages/x86_64/*/*.apk
-          if-no-files-found: ignore
-
-      # 步骤7：回退上传IPK文件（如果存在）
-      - name: Upload IPK artifact (fallback)
+      # 步骤6：将编译好的 .ipk 文件打包为构建产物
+      # OpenWrt 21.02 使用传统的 OPKG 包管理器，生成 .ipk 文件
+      - name: Upload IPK artifact
         uses: actions/upload-artifact@v4
         with:
           name: mentohust-ipk-x86_64
-          path: bin/packages/x86_64/*/*.ipk
-          if-no-files-found: ignore
+          path: bin/packages/x86_64/packages_ci/*.ipk
+          if-no-files-found: warn
 

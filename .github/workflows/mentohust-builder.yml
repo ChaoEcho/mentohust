@@ -1,0 +1,47 @@
+# 工作流名称
+name: Build MentoHUST for x86_64 Snapshot
+
+# 1. 工作流触发器
+# 设置为 "workflow_dispatch"，允许您从 GitHub 仓库的 "Actions" 标签页手动触发此构建流程。
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    # 任务名称
+    name: Build for x86_64
+    # 使用最新的 Ubuntu 环境进行构建
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步骤1：签出您的仓库代码
+      # 这一步会把您上传的 MentoHUST 源代码下载到构建环境中。
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 步骤2：使用 OpenWrt 官方 SDK Action 编译软件包
+      # 这是核心步骤，它会自动处理 SDK 下载、链接源码和编译。
+      - name: Build MentoHUST package
+        uses: openwrt/gh-action-sdk@main
+        env:
+          # 这是最关键的设置，已为您配置好：
+          # 'x86_64' 是您的目标CPU架构。
+          # 'snapshot' 是版本号，因为您的 OpenWrt 24.10.x 是一个非常新的开发快照版。
+          ARCH: x86_64-snapshot
+          
+          # 告诉 Action 去编译您仓库中哪个目录下的软件包。
+          # 这里假设您的软件包源代码位于一个名为 'mentohust' 的文件夹中。
+          PACKAGES: mentohust
+          
+          # 自定义 feed 的名称，这是一个标准的默认值。
+          FEEDNAME: packages_ci
+
+      # 步骤3：将编译好的 .ipk 文件打包为构建产物
+      # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
+      - name: Upload IPK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # 设置下载下来的 zip 压缩包的名字
+          name: mentohust-ipk-x86_64
+          # 需要上传的文件的路径，通配符会自动匹配编译好的 .ipk 文件
+          path: bin/packages/x86_64/packages_ci/*.ipk

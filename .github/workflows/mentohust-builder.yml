@@ -22,7 +22,19 @@ jobs:
           path: './mentohust'
           fetch-depth: 0
 
-      # 步骤2：使用 OpenWrt 官方 SDK Action 编译软件包
+      # 步骤2：调试 - 显示目录结构和文件内容
+      - name: Debug - Show directory structure and files
+        run: |
+          echo "=== Current working directory ==="
+          pwd
+          echo "=== Directory structure ==="
+          find . -type f -name "*.mk" -o -name "Makefile" -o -name "*.c" -o -name "*.h" | head -20
+          echo "=== mentohust directory contents ==="
+          ls -la ./mentohust/ || echo "mentohust directory not found"
+          echo "=== Makefile content (if exists) ==="
+          cat ./mentohust/Makefile || echo "Makefile not found"
+
+      # 步骤3：使用 OpenWrt 官方 SDK Action 编译软件包
       # 这是核心步骤，它会自动处理 SDK 下载、链接源码和编译。
       - name: Build MentoHUST package
         uses: openwrt/gh-action-sdk@main
@@ -40,8 +52,26 @@ jobs:
           
           # 禁用刷新检查以避免构建问题
           NO_REFRESH_CHECK: true
+          
+          # 启用详细输出模式以获得更多调试信息
+          V: sc
 
-      # 步骤3：将编译好的 .ipk 文件打包为构建产物
+      # 步骤4：构建失败时的调试信息
+      - name: Debug - Show build environment on failure
+        if: failure()
+        run: |
+          echo "=== Build failed, showing debug information ==="
+          echo "=== Current directory structure ==="
+          find . -name "*.log" -o -name "*.err" -o -name "*error*" | head -10
+          echo "=== Check for build logs ==="
+          find /builder -name "*.log" 2>/dev/null | head -5 || echo "No build logs found in /builder"
+          echo "=== Check package directory ==="
+          ls -la /feed/package/ 2>/dev/null || echo "No /feed/package/ directory"
+          ls -la package/ 2>/dev/null || echo "No package/ directory"
+          echo "=== Environment variables ==="
+          env | grep -E "(ARCH|PACKAGES|FEEDNAME)" || echo "No relevant env vars"
+
+      # 步骤5：将编译好的 .ipk 文件打包为构建产物
       # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
       - name: Upload IPK artifact
         uses: actions/upload-artifact@v4

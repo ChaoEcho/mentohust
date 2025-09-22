@@ -40,12 +40,12 @@ define Package/mentohust/conffiles
 endef
 
 define Build/Compile
-	#$(Build/Compile/$(PKG_NAME))
-	$(MAKE) -C $(PKG_BUILD_DIR)/ \
-	$(TARGET_CONFIGURE_OPTS) \
-	CFLAGS="$(TARGET_CFLAGS)" \
-	CPPFLAGS="$(TARGET_CPPFLAGS)"	\
-	LDFLAGS="$(TARGET_LDFLAGS) -ldl"
+	$(MAKE) -C $(PKG_BUILD_DIR) \
+		$(TARGET_CONFIGURE_OPTS) \
+		CC="$(TARGET_CC)" \
+		CFLAGS="$(TARGET_CFLAGS) -I$(STAGING_DIR)/usr/include" \
+		LDFLAGS="$(TARGET_LDFLAGS) -L$(STAGING_DIR)/usr/lib -lpcap -ldl" \
+		all
 endef
 
 define Package/mentohust/install

@@ -1,5 +1,5 @@
 # 工作流名称
-name: Build MentoHUST for x86_64 Snapshot
+name: Build MentoHUST Package for x86_64 Snapshot
 
 # 1. 工作流触发器
 # 设置为 "workflow_dispatch"，允许您从 GitHub 仓库的 "Actions" 标签页手动触发此构建流程。
@@ -71,23 +71,32 @@ jobs:
           echo "=== Environment variables ==="
           env | grep -E "(ARCH|PACKAGES|FEEDNAME)" || echo "No relevant env vars"
 
-      # 步骤5：检查生成的IPK文件位置
-      - name: Debug - Find generated IPK files
+      # 步骤5：检查生成的包文件位置（支持APK和IPK）
+      - name: Debug - Find generated package files
         run: |
-          echo "=== Searching for IPK files ==="
-          find . -name "*.ipk" -type f 2>/dev/null || echo "No .ipk files found in current directory"
+          echo "=== Searching for package files ==="
+          find . -name "*.apk" -type f 2>/dev/null && echo "Found .apk files" || echo "No .apk files found in current directory"
+          find . -name "*.ipk" -type f 2>/dev/null && echo "Found .ipk files" || echo "No .ipk files found in current directory"
           echo "=== Checking bin directory structure ==="
           ls -la bin/ 2>/dev/null || echo "No bin directory"
-          find bin/ -name "*.ipk" 2>/dev/null || echo "No .ipk files in bin directory"
+          find bin/ -name "*.apk" -o -name "*.ipk" 2>/dev/null || echo "No package files in bin directory"
           echo "=== Checking all possible package directories ==="
-          find . -path "*/packages/*" -name "*.ipk" 2>/dev/null || echo "No packages found"
+          find . -path "*/packages/*" -name "*.apk" -o -path "*/packages/*" -name "*.ipk" 2>/dev/null || echo "No packages found"
 
-      # 步骤6：将编译好的 .ipk 文件打包为构建产物
-      # 这会让您可以在 Actions 运行结束后，轻松地下载到最终的安装包。
-      - name: Upload IPK artifact
+      # 步骤6：将编译好的包文件打包为构建产物（优先APK，回退到IPK）
+      # 新版本OpenWrt使用APK包管理器，旧版本使用IPK/OPKG
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mentohust-apk-x86_64
+          path: bin/packages/x86_64/*/*.apk
+          if-no-files-found: ignore
+
+      # 步骤7：回退上传IPK文件（如果存在）
+      - name: Upload IPK artifact (fallback)
         uses: actions/upload-artifact@v4
         with:
           name: mentohust-ipk-x86_64
           path: bin/packages/x86_64/*/*.ipk
-          if-no-files-found: warn
+          if-no-files-found: ignore
 

@@ -22,3 +22,7 @@ mentohust: $(OBJECTS)
 # Clean rule
 clean:
 	rm -f mentohust $(OBJECTS)
+
+# Install rule (for compatibility)
+install:
+	@echo "Install target called - binaries should be installed by OpenWrt package system"

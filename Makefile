@@ -8,7 +8,7 @@ PKG_RELEASE:=2
 
 PKG_FIXUP:=autoreconf
 
-PKG_INSTALL:=1
+PKG_INSTALL:=0
 
 CONFIGURE_ARGS += \
 	--disable-encodepass \
